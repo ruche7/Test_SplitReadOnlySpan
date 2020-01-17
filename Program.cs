@@ -2,214 +2,229 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
 namespace TestApp
 {
     /// <summary>
-    /// ReadOnlySpan{T}.SplitToRanges ベンチマークアプリクラス。
+    /// ベンチマークメソッド群を提供するクラス。
     /// </summary>
-    internal static class Program
+    public class BenchmarkMethods
     {
-        #region ベンチマーク対象メソッド群
+        #region ベンチマークメソッド群
 
-        /// <summary>
-        /// 文字列の各行について行頭と行末の空白文字を取り除く。
-        /// </summary>
-        /// <param name="text">文字列。</param>
-        /// <returns>加工した文字列。</returns>
-        /// <remarks>
-        /// string.Split + string.Join
-        /// </remarks>
-        private static string TrimLines_StringSplitJoin(string text) =>
-            string.Join('\n', text.Split('\n').Select(s => s.Trim()));
+        [Benchmark]
+        public string[] String_SplitNewLine_Line1() => String_SplitNewLine(Line1);
+        [Benchmark]
+        public string[] Span_SplitNewLine_Line1() => Span_SplitNewLine(Line1);
 
-        /// <summary>
-        /// 文字列の各行について行頭と行末の空白文字を取り除く。
-        /// </summary>
-        /// <param name="text">文字列。</param>
-        /// <returns>加工した文字列。</returns>
-        /// <remarks>
-        /// string.Split + StringBuilder
-        /// </remarks>
-        private static string TrimLines_StringSplitBuild(string text)
-        {
-            var result = new StringBuilder(text.Length);
+        [Benchmark]
+        public string[] String_SplitNewLine_Line10() => String_SplitNewLine(Line10);
+        [Benchmark]
+        public string[] Span_SplitNewLine_Line10() => Span_SplitNewLine(Line10);
 
-            var lines = text.Split('\n');
-            for (int i = 0; i < lines.Length;)
-            {
-                result.Append(lines[i].AsSpan().Trim());
-                if (++i < lines.Length)
-                {
-                    result.Append('\n');
-                }
-            }
+        [Benchmark]
+        public string[] String_SplitNewLine_Line100() => String_SplitNewLine(Line100);
+        [Benchmark]
+        public string[] Span_SplitNewLine_Line100() => Span_SplitNewLine(Line100);
 
-            return result.ToString();
-        }
+        [Benchmark]
+        public string[] String_SplitNewLine_Line1000() => String_SplitNewLine(Line1000);
+        [Benchmark]
+        public string[] Span_SplitNewLine_Line1000() => Span_SplitNewLine(Line1000);
 
-        /// <summary>
-        /// 文字列の各行について行頭と行末の空白文字を取り除く。
-        /// </summary>
-        /// <param name="text">文字列。</param>
-        /// <returns>加工した文字列。</returns>
-        /// <remarks>
-        /// ReadOnlySpan{T}.SplitToRanges + string.Join
-        /// </remarks>
-        private static string TrimLines_SpanRangesJoin(string text)
-        {
-            var result = new StringBuilder(text.Length);
+        [Benchmark]
+        public string[] String_SplitNewLine_Line10000() => String_SplitNewLine(Line10000);
+        [Benchmark]
+        public string[] Span_SplitNewLine_Line10000() => Span_SplitNewLine(Line10000);
 
-            var span = text.AsSpan();
-            var ranges = span.SplitToRanges('\n');
-            var lines = new string[ranges.Count];
+        [Benchmark]
+        public string[] String_SplitLineBreaks_Line1() => String_SplitLineBreaks(Line1);
+        [Benchmark]
+        public string[] Span_SplitLineBreaks_Line1() => Span_SplitLineBreaks(Line1);
 
-            for (int i = 0; i < ranges.Count; ++i)
-            {
-                lines[i] = span[ranges[i]].Trim().ToString();
-            }
+        [Benchmark]
+        public string[] String_SplitLineBreaks_Line10() => String_SplitLineBreaks(Line10);
+        [Benchmark]
+        public string[] Span_SplitLineBreaks_Line10() => Span_SplitLineBreaks(Line10);
 
-            return string.Join('\n', lines);
-        }
+        [Benchmark]
+        public string[] String_SplitLineBreaks_Line100() => String_SplitLineBreaks(Line100);
+        [Benchmark]
+        public string[] Span_SplitLineBreaks_Line100() => Span_SplitLineBreaks(Line100);
 
-        /// <summary>
-        /// 文字列の各行について行頭と行末の空白文字を取り除く。
-        /// </summary>
-        /// <param name="text">文字列。</param>
-        /// <returns>加工した文字列。</returns>
-        /// <remarks>
-        /// ReadOnlySpan{T}.SplitToRanges + StringBuilder
-        /// </remarks>
-        private static string TrimLines_SpanRangesBuild(string text)
-        {
-            var result = new StringBuilder(text.Length);
+        [Benchmark]
+        public string[] String_SplitLineBreaks_Line1000() => String_SplitLineBreaks(Line1000);
+        [Benchmark]
+        public string[] Span_SplitLineBreaks_Line1000() => Span_SplitLineBreaks(Line1000);
 
-            var span = text.AsSpan();
-            var ranges = span.SplitToRanges('\n');
-
-            for (int i = 0; i < ranges.Count;)
-            {
-                result.Append(span[ranges[i]].Trim());
-                if (++i < ranges.Count)
-                {
-                    result.Append('\n');
-                }
-            }
-
-            return result.ToString();
-        }
+        [Benchmark]
+        public string[] String_SplitLineBreaks_Line10000() => String_SplitLineBreaks(Line10000);
+        [Benchmark]
+        public string[] Span_SplitLineBreaks_Line10000() => Span_SplitLineBreaks(Line10000);
 
         #endregion
 
-        #region ベンチマーク処理
+        /// <summary>
+        /// string.Split('\n') を行う。
+        /// </summary>
+        /// <param name="text">対象文字列。</param>
+        /// <returns>分割文字列配列。</returns>
+        private static string[] String_SplitNewLine(string text) => text.Split('\n');
 
         /// <summary>
-        /// ベンチマークを実施する。
+        /// ReadOnlySpan{char}.SplitToRanges('\n') を用いた文字列分割を行う。
         /// </summary>
-        /// <param name="lineCount">行数。</param>
-        /// <param name="loopCount">ループ回数。</param>
-        private static void DoBenchmark(int lineCount, int loopCount)
+        /// <param name="text">対象文字列。</param>
+        /// <returns>分割文字列配列。</returns>
+        private static string[] Span_SplitNewLine(string text)
         {
-            var text = MakeString(lineCount);
-
-#if DEBUG
-            // 結果が等しいか確認しておく
+            var span = text.AsSpan();
+            var ranges = span.SplitToRanges('\n');
+            var lines = new string[ranges.Count];
+            for (int li = 0; li < lines.Length; ++li)
             {
-                var resultSJ = TrimLines_StringSplitJoin(text);
-                var resultSB = TrimLines_StringSplitBuild(text);
-                var resultRJ = TrimLines_SpanRangesJoin(text);
-                var resultRB = TrimLines_SpanRangesBuild(text);
-                Debug.Assert(resultSJ == resultSB);
-                Debug.Assert(resultSJ == resultRJ);
-                Debug.Assert(resultSJ == resultRB);
+                lines[li] = span[ranges[li]].ToString();
             }
-#endif // DEBUG
-
-            DoMeasure(
-                nameof(TrimLines_StringSplitJoin),
-                TrimLines_StringSplitJoin,
-                text,
-                lineCount,
-                loopCount);
-            DoMeasure(
-                nameof(TrimLines_StringSplitBuild),
-                TrimLines_StringSplitBuild,
-                text,
-                lineCount,
-                loopCount);
-            DoMeasure(
-                nameof(TrimLines_SpanRangesJoin),
-                TrimLines_SpanRangesJoin,
-                text,
-                lineCount,
-                loopCount);
-            DoMeasure(
-                nameof(TrimLines_SpanRangesBuild),
-                TrimLines_SpanRangesBuild,
-                text,
-                lineCount,
-                loopCount);
+            return lines;
         }
+
+        /// <summary>
+        /// string.Split(LineBreaks) を行う。
+        /// </summary>
+        /// <param name="text">対象文字列。</param>
+        /// <returns>分割文字列配列。</returns>
+        private static string[] String_SplitLineBreaks(string text) =>
+            text.Split(LineBreaks, StringSplitOptions.None);
+
+        /// <summary>
+        /// ReadOnlySpan{char}.SplitToRanges(LineBreaks) を用いた文字列分割を行う。
+        /// </summary>
+        /// <param name="text">対象文字列。</param>
+        /// <returns>分割文字列配列。</returns>
+        private static string[] Span_SplitLineBreaks(string text)
+        {
+            var span = text.AsSpan();
+            var ranges = span.SplitToRanges(LineBreaks);
+            var lines = new string[ranges.Count];
+            for (int li = 0; li < lines.Length; ++li)
+            {
+                lines[li] = span[ranges[li]].ToString();
+            }
+            return lines;
+        }
+
+        /// <summary>
+        /// 改行文字列配列。
+        /// </summary>
+        private static readonly string[] LineBreaks = { "\r\n", "\n", "\r" };
+
+        #region ソース文字列群
+
+        private static readonly string Line1 = MakeString(1);
+        private static readonly string Line10 = MakeString(10);
+        private static readonly string Line100 = MakeString(100);
+        private static readonly string Line1000 = MakeString(1000);
+        private static readonly string Line10000 = MakeString(10000);
+
+        #endregion
 
         /// <summary>
         /// 指定した行数で行頭と行末に空白文字を持つ文字列を作成する。
         /// </summary>
         /// <param name="lineCount">行数。</param>
         /// <returns>作成した文字列。</returns>
-        private static string MakeString(int lineCount) =>
-            string.Join(
-                '\n',
-                Enumerable.Range(0, lineCount)
-                    .Select(i =>
-                        new string(' ', i % 10) +
-                        new string('a', (i + 100) % 1000 + 1) +
-                        new string('\t', (i + 5) % 26)));
-
-        /// <summary>
-        /// メソッド呼び出しの時間計測を開始する。
-        /// </summary>
-        /// <param name="funcName">メソッド名。コンソール出力用。</param>
-        /// <param name="func">メソッド。</param>
-        /// <param name="text">メソッドの引数に渡す文字列。</param>
-        /// <param name="lineCount">行数。コンソール出力用。</param>
-        /// <param name="loopCount">ループ回数。</param>
-        private static void DoMeasure(
-            string funcName,
-            Func<string, string> func,
-            string text,
-            int lineCount,
-            int loopCount)
+        /// <remarks>
+        /// 改行は "\r\n", "\n", "\r" の混合となる。
+        /// </remarks>
+        private static string MakeString(int lineCount)
         {
-            Console.WriteLine($@"{funcName,-28}: line = {lineCount}, loop = {loopCount}");
+            var builder = new StringBuilder();
 
-            var sw = Stopwatch.StartNew();
-            for (int i = 0; i < loopCount; ++i)
+            for (int li = 0; li < lineCount; ++li)
             {
-                func(text);
+                if (li != 0)
+                {
+                    builder.Append(LineBreaks[li % LineBreaks.Length]);
+                }
+                builder.Append(
+                    new string(' ', li % 10) +
+                    new string('a', (li + 100) % 1000 + 1) +
+                    new string('\t', (li + 5) % 26));
             }
-            var elapsed = sw.Elapsed.TotalMilliseconds;
 
-            Console.WriteLine($@"  -> {elapsed:F3} ms");
+            return builder.ToString();
         }
+    }
 
-        #endregion
-
+    /// <summary>
+    /// ReadOnlySpan{T}.SplitToRanges ベンチマークアプリクラス。
+    /// </summary>
+    internal static class Program
+    {
         /// <summary>
         /// メインエントリポイント。
         /// </summary>
         private static int Main()
         {
-            const int baseLoopCount = 2000000;
+            Validate();
 
-            DoBenchmark(1, baseLoopCount);
-            Console.WriteLine();
-            DoBenchmark(10, baseLoopCount / 10);
-            Console.WriteLine();
-            DoBenchmark(100, baseLoopCount / 100);
-            Console.WriteLine();
-            DoBenchmark(1000, baseLoopCount / 2000);
+            // ベンチマーク実施
+            BenchmarkRunner.Run<BenchmarkMethods>();
 
             return 0;
+        }
+
+        /// <summary>
+        /// Debug ビルドにおいてベンチマークメソッド群の正当性を評価する。
+        /// </summary>
+        [Conditional(@"DEBUG")]
+        private static void Validate()
+        {
+            var methods = new BenchmarkMethods();
+
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitNewLine_Line1(),
+                    methods.Span_SplitNewLine_Line1()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitNewLine_Line10(),
+                    methods.Span_SplitNewLine_Line10()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitNewLine_Line100(),
+                    methods.Span_SplitNewLine_Line100()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitNewLine_Line1000(),
+                    methods.Span_SplitNewLine_Line1000()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitNewLine_Line10000(),
+                    methods.Span_SplitNewLine_Line10000()));
+
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitLineBreaks_Line1(),
+                    methods.Span_SplitLineBreaks_Line1()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitLineBreaks_Line10(),
+                    methods.Span_SplitLineBreaks_Line10()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitLineBreaks_Line100(),
+                    methods.Span_SplitLineBreaks_Line100()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitLineBreaks_Line1000(),
+                    methods.Span_SplitLineBreaks_Line1000()));
+            Debug.Assert(
+                Enumerable.SequenceEqual(
+                    methods.String_SplitLineBreaks_Line10000(),
+                    methods.Span_SplitLineBreaks_Line10000()));
         }
     }
 }
