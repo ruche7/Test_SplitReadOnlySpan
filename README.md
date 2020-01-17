@@ -11,6 +11,8 @@ Benchmarking `SpanExtensions.SplitToRanges<T>` extension methods.
 
 These methods splits `ReadOnlySpan<T>` or `Span<T>` by a separator(s), and returns `List<Range>` that means each split range.
 
+Japanese article : https://www.ruche-home.net/boyaki/2020-01-18/CReadOnl
+
 ## Benchmark methods
 
 All following objects and methods are implemented on `BenchmarkMethods` static class.
