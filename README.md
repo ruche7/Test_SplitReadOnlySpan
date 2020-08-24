@@ -23,9 +23,9 @@ private string text = @"";
 
 // Number of lines of text for Setup() method. (Assigned by BenchmarkDotNet)
 [Params(1, 10, 100, 1000, 10000)]
-public int Line;
+public int Line { get; set; }
 
-// Make N-line text. (N = Line)
+// Make N-line text. (Called by BenchmarkDotNet before benchmarking)
 [GlobalSetup]
 public void Setup() => this.text = MakeString(this.Line);
 ```
