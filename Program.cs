@@ -19,7 +19,7 @@ namespace TestApp
         /// 分割対象文字列の行数。 BenchmarkDotNet によって初期化される。
         /// </summary>
         [Params(1, 10, 100, 1000, 10000)]
-        public int Line;
+        public int Line { get; set; }
 
         /// <summary>
         /// ベンチマーク前処理を行う。
