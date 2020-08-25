@@ -13,7 +13,7 @@ These methods splits `ReadOnlySpan<T>` or `Span<T>` by a separator(s), and retur
 
 ## Benchmark methods
 
-All following objects and methods are implemented on `BenchmarkMethods` static class.
+All following objects and methods are implemented on `BenchmarkMethods` class.
 
 ```csharp
 private static readonly string[] LineBreaks = { "\r\n", "\n", "\r" };
